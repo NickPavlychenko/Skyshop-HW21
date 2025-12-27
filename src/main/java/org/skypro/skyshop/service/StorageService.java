@@ -1,5 +1,6 @@
 package org.skypro.skyshop.service;
 
+import org.skypro.skyshop.exception.NoSuchProductException;
 import org.skypro.skyshop.model.article.Article;
 import org.skypro.skyshop.model.product.Product;
 import org.skypro.skyshop.model.product.SimpleProduct;
@@ -8,12 +9,7 @@ import org.skypro.skyshop.model.product.FixPriceProduct;
 import org.skypro.skyshop.model.search.Searchable;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class StorageService {
@@ -27,6 +23,13 @@ public class StorageService {
     }
 
     private void initializeTestData() {
+
+        Product testProduct = new SimpleProduct(
+                UUID.fromString("3e0357fc-de23-4dfc-b598-e999f776c345"),
+                "Тестовый ноутбук",
+                50000
+        );
+        productStorage.put(testProduct.getId(), testProduct);
 
         Product laptop1 = new SimpleProduct(
                 UUID.randomUUID(),
@@ -98,8 +101,16 @@ public class StorageService {
         return allSearchables;
     }
 
+    public Optional<Product> findProductById(UUID id) {
+        return Optional.ofNullable(productStorage.get(id));
+    }
+
     public Product getProductById(UUID id) {
-        return productStorage.get(id);
+        Product product = productStorage.get(id);
+        if (product == null) {
+            throw new NoSuchProductException("Продукт с ID " + id + " не найден");
+        }
+        return product;
     }
 
     public Article getArticleById(UUID id) {
