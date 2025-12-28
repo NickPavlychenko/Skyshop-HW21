@@ -26,31 +26,6 @@ class SearchServiceTest {
     @InjectMocks
     private SearchService searchService;
 
-    private Product product1;
-    private Product product2;
-    private Article article1;
-
-    @BeforeEach
-    void setUp() {
-        product1 = new SimpleProduct(
-                UUID.fromString("11111111-1111-1111-1111-111111111111"),
-                "Игровой ноутбук",
-                50000
-        );
-
-        product2 = new SimpleProduct(
-                UUID.fromString("22222222-2222-2222-2222-222222222222"),
-                "Офисный монитор",
-                15000
-        );
-
-        article1 = new Article(
-                UUID.fromString("33333333-3333-3333-3333-333333333333"),
-                "Обзор игровых ноутбуков",
-                "Современные игровые ноутбуки имеют мощные видеокарты"
-        );
-    }
-
     @Test
     void search_WhenStorageIsEmpty_ShouldReturnEmptyList() {
         when(storageService.getAllSearchables()).thenReturn(Collections.emptyList());
@@ -64,6 +39,12 @@ class SearchServiceTest {
 
     @Test
     void search_WhenNoMatches_ShouldReturnEmptyList() {
+        Product product2 = new SimpleProduct(
+                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                "Офисный монитор",
+                15000
+        );
+
         List<Searchable> searchables = Arrays.asList(product2);
         when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
 
@@ -76,6 +57,24 @@ class SearchServiceTest {
 
     @Test
     void search_WhenMatchExists_ShouldReturnSearchResult() {
+        Product product1 = new SimpleProduct(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "Игровой ноутбук",
+                50000
+        );
+
+        Product product2 = new SimpleProduct(
+                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                "Офисный монитор",
+                15000
+        );
+
+        Article article1 = new Article(
+                UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                "Обзор игровой мыши",
+                "Современные игровые мыши имеют высокий DPI"
+        );
+
         List<Searchable> searchables = Arrays.asList(product1, product2, article1);
         when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
 
@@ -85,14 +84,23 @@ class SearchServiceTest {
         assertEquals(2, results.size());
 
         List<SearchResult> resultList = new ArrayList<>(results);
-        assertTrue(resultList.stream().anyMatch(r -> r.getName().contains("ноутбук")));
-        assertTrue(resultList.stream().anyMatch(r -> r.getName().contains("Обзор")));
+
+        assertTrue(resultList.stream()
+                .anyMatch(r -> r.getName().equals("Игровой ноутбук")));
+        assertTrue(resultList.stream()
+                .anyMatch(r -> r.getName().equals("Обзор игровой мыши")));
 
         verify(storageService, times(1)).getAllSearchables();
     }
 
     @Test
     void search_ShouldBeCaseInsensitive() {
+        Product product1 = new SimpleProduct(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "Игровой ноутбук",
+                50000
+        );
+
         List<Searchable> searchables = Arrays.asList(product1);
         when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
 
@@ -107,6 +115,12 @@ class SearchServiceTest {
 
     @Test
     void search_WhenPartialMatch_ShouldReturnResults() {
+        Product product1 = new SimpleProduct(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "Игровой ноутбук",
+                50000
+        );
+
         List<Searchable> searchables = Arrays.asList(product1);
         when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
 
@@ -117,6 +131,24 @@ class SearchServiceTest {
 
     @Test
     void search_WhenEmptyPattern_ShouldReturnAll() {
+        Product product1 = new SimpleProduct(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "Игровой ноутбук",
+                50000
+        );
+
+        Product product2 = new SimpleProduct(
+                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                "Офисный монитор",
+                15000
+        );
+
+        Article article1 = new Article(
+                UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                "Обзор игровых ноутбуков",
+                "Современные игровые ноутбуки имеют мощные видеокарты"
+        );
+
         List<Searchable> searchables = Arrays.asList(product1, product2, article1);
         when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
 
@@ -127,11 +159,53 @@ class SearchServiceTest {
 
     @Test
     void search_WhenNullPattern_ShouldReturnAll() {
+        Product product1 = new SimpleProduct(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "Игровой ноутбук",
+                50000
+        );
+
+        Product product2 = new SimpleProduct(
+                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                "Офисный монитор",
+                15000
+        );
+
+        Article article1 = new Article(
+                UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                "Обзор игровых ноутбуков",
+                "Современные игровые ноутбуки имеют мощные видеокарты"
+        );
+
         List<Searchable> searchables = Arrays.asList(product1, product2, article1);
         when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
 
         Collection<SearchResult> results = searchService.search(null);
 
+        assertNotNull(results);
         assertEquals(3, results.size());
+    }
+
+    @Test
+    void search_WhenPatternIsOnlySpaces_ShouldReturnAll() {
+        Product product1 = new SimpleProduct(
+                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                "Игровой ноутбук",
+                50000
+        );
+
+        Product product2 = new SimpleProduct(
+                UUID.fromString("22222222-2222-2222-2222-222222222222"),
+                "Офисный монитор",
+                15000
+        );
+
+        List<Searchable> searchables = Arrays.asList(product1, product2);
+        when(storageService.getAllSearchables()).thenReturn(new ArrayList<>(searchables));
+
+        Collection<SearchResult> results = searchService.search("   ");
+
+        assertNotNull(results);
+        assertEquals(2, results.size());
     }
 }

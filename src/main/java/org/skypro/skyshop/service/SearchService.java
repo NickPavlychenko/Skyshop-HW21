@@ -16,7 +16,13 @@ public class SearchService {
     }
 
     public Collection<SearchResult> search(String pattern) {
-        String patternLower = pattern.toLowerCase();
+        if (pattern == null || pattern.trim().isEmpty()) {
+            return storageService.getAllSearchables().stream()
+                    .map(SearchResult::fromSearchable)
+                    .collect(Collectors.toList());
+        }
+
+        String patternLower = pattern.toLowerCase().trim();
 
         return storageService.getAllSearchables().stream()
                 .filter(item -> item.getSearchTerm().toLowerCase().contains(patternLower))
